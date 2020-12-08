@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  flaskapp:
+    container_name: flaskapp
+    image: azure-container-group-with-flask-nginx_flaskapp:latest
+    ports:
+      - "5000:5000"
+    build: 
+      context: ./app
+      dockerfile: Dockerfile
+  
+  nginx:
+    container_name: nginx
+    image: azure-container-group-with-flask-nginx_nginx:latest
+    ports:
+      - "80:80"
+    restart: always
+    build: ./.nginx
+    depends_on:
+      - flaskapp

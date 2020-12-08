@@ -1,0 +1,56 @@
+name: Linux Azure Container Group Workflow
+
+on:
+  push:
+    branches: 
+      # Push events on main branch
+      - main
+      # Push events to branches matching refs/heads/releases/10
+      - 'releases/**'
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+        steps:
+        # checkout the repo
+        - name: 'Checkout GitHub Action'
+          uses: actions/checkout@master
+
+        - name: Replace 'flaskapp' to 'localhost' in nginx default.conf
+          run: |
+            sed -i 's/flaskapp/localhost/' ./.nginx/default.conf
+          
+        - name: 'Login via Azure CLI'
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+        - name: 'Login to Azure Container Registry'
+          uses: azure/docker-login@v1
+          with:
+            login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+            username: ${{ secrets.REGISTRY_USERNAME }}
+            password: ${{ secrets.REGISTRY_PASSWORD }}
+
+        - name: Docker Compose and Push
+          run: |
+            mv ./.azure/acr-docker-compose.yml docker-compose.yml
+            sed -i 's/REGISTRY_LOGIN_SERVER/${{ secrets.REGISTRY_LOGIN_SERVER }}/' docker-compose.yml
+            sed -i 's/VERSION/${{ github.sha }}/' docker-compose.yml
+            cat docker-compose.yml
+            docker-compose up --build -d
+            docker-compose push
+            
+        - name: Generate  multi-container group YAML file
+          run: |
+            sed -i 's/VERSION/${{ github.sha }}/' ./.azure/aci-azure-container-group-with-flask-nginx.yaml
+            sed -i 's/REGISTRY_LOGIN_SERVER/${{ secrets.REGISTRY_LOGIN_SERVER }}/' ./.azure/aci-azure-container-group-with-flask-nginx.yaml
+            sed -i 's/REGISTRY_USERNAME/${{ secrets.REGISTRY_USERNAME }}/' ./.azure/aci-azure-container-group-with-flask-nginx.yaml
+            sed -i 's/REGISTRY_PASSWORD/${{ secrets.REGISTRY_PASSWORD }}/' ./.azure/aci-azure-container-group-with-flask-nginx.yaml
+
+        - name: Azure CLI Action for Create Container
+          uses: Azure/cli@1.0.4
+          with:
+            azcliversion: 2.0.72
+            inlineScript: |
+              az container create --resource-group ${{ secrets.RESOURCE_GROUP }} --file ./.azure/aci-azure-container-group-with-flask-nginx.yaml

@@ -1,0 +1,5 @@
+flask
+pandas
+PyAlgoTrade
+BeautifulSoup4
+gunicorn

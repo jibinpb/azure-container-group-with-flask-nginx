@@ -1,1 +1,7 @@
-# azure-container-group-with-flask-nginx
+# Azure Container group with Python Flask + NGINX
+
+Develop Locally
+
+```
+docker-compose up --build
+```
