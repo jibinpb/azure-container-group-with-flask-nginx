@@ -43,14 +43,14 @@ jobs:
             
         - name: Generate  multi-container group YAML file
           run: |
-            sed -i 's/VERSION/${{ github.sha }}/' ./.azure/aci-azure-container-group-with-flask-nginx.yaml
-            sed -i 's/REGISTRY_LOGIN_SERVER/${{ secrets.REGISTRY_LOGIN_SERVER }}/' ./.azure/aci-azure-container-group-with-flask-nginx.yaml
-            sed -i 's/REGISTRY_USERNAME/${{ secrets.REGISTRY_USERNAME }}/' ./.azure/aci-azure-container-group-with-flask-nginx.yaml
-            sed -i 's/REGISTRY_PASSWORD/${{ secrets.REGISTRY_PASSWORD }}/' ./.azure/aci-azure-container-group-with-flask-nginx.yaml
+            sed -i 's/VERSION/${{ github.sha }}/' ./.azure/aci-multi-container-group.yaml
+            sed -i 's/REGISTRY_LOGIN_SERVER/${{ secrets.REGISTRY_LOGIN_SERVER }}/' ./.azure/aci-multi-container-group.yaml
+            sed -i 's/REGISTRY_USERNAME/${{ secrets.REGISTRY_USERNAME }}/' ./.azure/aci-multi-container-group.yaml
+            sed -i 's/REGISTRY_PASSWORD/${{ secrets.REGISTRY_PASSWORD }}/' ./.azure/aci-multi-container-group.yaml
 
         - name: Azure CLI Action for Create Container
           uses: Azure/cli@1.0.4
           with:
             azcliversion: 2.0.72
             inlineScript: |
-              az container create --resource-group ${{ secrets.RESOURCE_GROUP }} --file ./.azure/aci-azure-container-group-with-flask-nginx.yaml
+              az container create --resource-group ${{ secrets.RESOURCE_GROUP }} --file ./.azure/aci-multi-container-group.yaml
